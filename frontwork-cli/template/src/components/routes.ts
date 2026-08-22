@@ -8,7 +8,7 @@ export class MainDocumentBuilder extends DocumentBuilder {
 	constructor(context: FrontworkContext) {
 		super(context);
 		const header = this.body_append( context.create_element("header") );
-		context.ensure_text_element("a", "a-home", { href: "/" }).append_to(header);
+		context.ensure_text_element("a", "a-home", "a-home", { href: "/" }).append_to(header);
 		this.main = this.body_append(context.create_element("main"));
 	}
 }

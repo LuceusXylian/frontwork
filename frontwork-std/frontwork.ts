@@ -773,7 +773,7 @@ export class FrontworkContext {
      * @param tag The tag name of the element to create.
      * @param i18n_key The keyword specified in the english.json. Uses innerText to set the translated text.
      * @param attributes Optional. Attributes will be only added if it is created. Example: { class: "container", "data-role": "content" }
-     * @returns ElemKit
+     * @returns ElemKit with i18n text
      */
     create_text_element<K extends keyof HTMLElementTagNameMap>(tag: K, i18n_key: string, attributes?: { [key: string]: string }): ElemKit<HTMLElementTagNameMap[K]> {
         const elem = document.createElement(tag);
@@ -791,7 +791,7 @@ export class FrontworkContext {
      * @param tag The tag name of the element to create if it doesn't exist.
      * @param id The ID of the element to search for or create. Must be unique!
      * @param attributes Optional. Attributes will be only added if it is created. Example: { class: "container", "data-role": "content" }
-     * @returns The HTML element with the specified ID.
+     * @returns ElemKit with the specified ID.
      */
     ensure_element<K extends keyof HTMLElementTagNameMap>(tag: K, id: string, attributes?: { [key: string]: string }): ElemKit<HTMLElementTagNameMap[K]> {
         const elem = this.do_building? this.html.elem.querySelector("#"+id) : document.getElementById(id);
@@ -811,17 +811,17 @@ export class FrontworkContext {
      * Ensures the existence of an HTML element by ID. Creates a new element and appends I18n text if it doesn't exist
      * @param tag The tag name of the element.
      * @param id The ID of the element to search for or create. Must be unique!
-     * @param text The text content of the element.     
+	 * @param i18n_key The keyword specified in the english.json. Uses innerText to set the translated text.    
      * @param attributes Optional. Example: { class: "container", "data-role": "content" }
-     * @returns The newly created HTML element.
+     * @returns ElemKit with the specified ID and i18n text.
      */
-    ensure_text_element<K extends keyof HTMLElementTagNameMap>(tag: K, id: string, attributes?: { [key: string]: string }): ElemKit<HTMLElementTagNameMap[K]> {
+    ensure_text_element<K extends keyof HTMLElementTagNameMap>(tag: K, id: string,  i18n_key: string, attributes?: { [key: string]: string }): ElemKit<HTMLElementTagNameMap[K]> {
         const elem = this.do_building? this.html.elem.querySelector("#"+id) : document.getElementById(id);
         if(elem !== null) return new ElemKit<HTMLElementTagNameMap[K]>(elem as HTMLElementTagNameMap[K], false);
         
         const elem2 = document.createElement(tag);
         elem2.id = id;
-        elem2.innerText = this.get_translation(id);
+        elem2.innerText = this.get_translation(i18n_key);
         if (attributes) {
             for (const key in attributes) {
                 elem2.setAttribute(key, attributes[key]);

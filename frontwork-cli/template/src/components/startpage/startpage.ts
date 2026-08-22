@@ -8,11 +8,11 @@ export class StartpageComponent implements Component {
     async build(context: FrontworkContext) {
         const document_builder = new MainDocumentBuilder(context);
         
-		const title1 = context.ensure_text_element("h1", "title1").append_to(document_builder.main);
-		const text1 = context.ensure_text_element("p", "description1").append_to(document_builder.main);
+		const title1 = context.ensure_text_element("h1", "title1", "title1").append_to(document_builder.main);
+		const text1 = context.ensure_text_element("p", "description1", "description1").append_to(document_builder.main);
 		
 		const section = context.create_element("section").append_to(document_builder.main);
-		context.ensure_text_element("h2", "title2").append_to(section);
+		context.ensure_text_element("h2", "title2", "title2").append_to(section);
 
 		// Form
 		const action = context.request.GET.get("action");
@@ -30,7 +30,7 @@ export class StartpageComponent implements Component {
 			context.ensure_element("input", "text"+i, { type: "text", name: "text"+i, value: "aabbcc" }).append_to(form);
 		}
 		
-		context.ensure_text_element("button", "submit_button", { type: "submit", name: "action", value: "sent" }).append_to(form);
+		context.ensure_text_element("button", "submit_button", "submit_button", { type: "submit", name: "action", value: "sent" }).append_to(form);
         
 
         return await new FrontworkResponse(200, 
