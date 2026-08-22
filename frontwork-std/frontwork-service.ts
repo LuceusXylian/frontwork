@@ -130,6 +130,26 @@ export class FrontworkWebservice extends Frontwork {
         super(init);
         if (dist_folder.slice(-1) !== "/") dist_folder += "/";
 
+        const required_files = [style_css_path, main_js_path];
+        if (this.stage === EnvironmentStage.Development) {
+            required_files.push(main_js_path + ".map");
+        }
+
+        const missing_files = required_files.filter((file_path) => {
+            try {
+                Deno.statSync(file_path);
+                return false;
+            } catch (_) {
+                return true;
+            }
+        });
+
+        if (missing_files.length > 0) {
+            console.error("ERROR: The following dist files do not exist: " + missing_files.join(", "));
+            console.error("Please build the application first, e.g. run 'frontwork build' or 'frontwork watch'.");
+            Deno.exit(1);
+        }
+
         this.style_css = new Asset(style_css_path, "/css/style.css", "text/css; charset=utf-8");
         this.main_client_js = new Asset(main_js_path, "/js/main.client.js", "text/javascript; charset=utf-8");
         if (this.stage === EnvironmentStage.Development) {

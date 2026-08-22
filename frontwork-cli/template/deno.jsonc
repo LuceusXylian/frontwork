@@ -28,5 +28,8 @@
       "https://jsr.io": true
     },
     "deno.lint": true,
-    "deno.unstable": false
+    "deno.unstable": false,
+    "imports": {
+        "@frontwork-org/frontwork": "jsr:@frontwork-org/frontwork@^0.4.6"
+    }
 }

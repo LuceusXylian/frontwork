@@ -649,6 +649,7 @@ export interface ApiErrorEvent {
 
 export enum PageloadType { Serverside, ClientAfterServerside, ClientDefault }
 
+// deno-lint-ignore no-explicit-any
 const client_observers: {[key: string]: Observer<any>} = {};
 
 export class FrontworkContext {
@@ -758,6 +759,7 @@ export class FrontworkContext {
     }
 
 
+    // deno-lint-ignore no-explicit-any
     private readonly server_observers: {[key: string]: Observer<any>} = {};
 
     get_observer<T>(key: string): Observer<T> {
@@ -906,7 +908,7 @@ export class FrontworkContext {
             
             try {
                 if (!response.ok) {
-                    let api_error_response: ApiErrorResponse = JSON.parse(response_text);
+                    const api_error_response: ApiErrorResponse = JSON.parse(response_text);
                     api_error_response.status = response.status;
 
                     FW.reporter(LogType.Error, "api_request", "ERROR executing api_request( "+method+" "+path+" )", this, null);
@@ -925,6 +927,7 @@ export class FrontworkContext {
                     ok: true,
                     val: data as T
                 };
+            // deno-lint-ignore no-explicit-any
             } catch (error: any) {
                 let error_message = "API did not returned parsable JSON. Response: `";
                 if (response_text.length > 100) {
@@ -935,7 +938,7 @@ export class FrontworkContext {
                 error_message += "`";
                 FW.reporter(LogType.Error, "api_request", "ERROR executing api_request( "+method+" "+path+" ) Invalid JSON.", this, error_message+"\n\n"+error);
                 console.error(response, error);
-                let api_error_response: ApiErrorResponse = { status: 501, error_message: "API did not returned parsable JSON" }
+                const api_error_response: ApiErrorResponse = { status: 501, error_message: "API did not returned parsable JSON" }
                 this.api_error_event(this, this.client, method, path, params, api_error_response);
 
                 return {
@@ -943,9 +946,10 @@ export class FrontworkContext {
                     err: api_error_response
                 };
             }
+        // deno-lint-ignore no-explicit-any
         } catch (error: any) {
             FW.reporter(LogType.Error, "api_request", "ERROR executing api_request( "+method+" "+path+" )", this, error);
-            let api_error_response: ApiErrorResponse = { status: 503, error_message: error }
+            const api_error_response: ApiErrorResponse = { status: 503, error_message: error }
             this.api_error_event(this, this.client, method, path, params, api_error_response);
 
             return {

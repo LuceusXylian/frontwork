@@ -1,4 +1,4 @@
-import { FrontworkTestworker } from "jsr:@frontwork-org/frontwork@0.4.6/testworker";
+import { FrontworkTestworker } from "jsr:@frontwork-org/frontwork@^0.4.6/testworker";
 import { APP_CONFIG } from "./environments/environment.ts";
 
 
