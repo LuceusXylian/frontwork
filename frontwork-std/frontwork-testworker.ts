@@ -1,19 +1,19 @@
 import { } from "./dom.ts";
 import { Frontwork, FrontworkInit, FrontworkRequest, LogType, PostScope, FW, FrontworkContext, I18nLocale } from "./frontwork.ts";
-import { green, red, yellow } from "https://deno.land/std@0.224.0/fmt/colors.ts";
+import { green, red, yellow } from "jsr:@std/fmt@^1.0.0/colors";
 
 
 export class FrontworkTestworker extends Frontwork {
     test_count = 0;
     fail_count = 0;
     warn_count = 0;
-    time_start = new Date().getTime();
+    time_start: number = new Date().getTime();
 
     constructor(init: FrontworkInit) {
         super(init);
         console.info("Test worker started\n");
         FW.verbose_logging = true;
-        FW.reporter = (log_type: LogType, category: string, text: string, context: FrontworkContext|null, error: Error|null) => {
+        FW.reporter = (log_type: LogType, category: string, text: string, context: FrontworkContext|null, error: Error|string|null) => {
             if (log_type === LogType.Error) {
                 this.fail_count++;
                 if(error === null) console.error(red(text));
@@ -26,7 +26,7 @@ export class FrontworkTestworker extends Frontwork {
     }
 
     // deno-lint-ignore no-explicit-any
-    assert_equals(actual: any, expected: any) {
+    assert_equals(actual: any, expected: any): this {
         this.test_count++;
         
         if (actual === expected) {
@@ -39,7 +39,7 @@ export class FrontworkTestworker extends Frontwork {
     }
 
     // deno-lint-ignore no-explicit-any
-    assert_not_equals(actual: any, expected: any) {
+    assert_not_equals(actual: any, expected: any): this {
         this.test_count++;
         
         if (actual === expected) {
@@ -52,7 +52,7 @@ export class FrontworkTestworker extends Frontwork {
     }
 
     // deno-lint-ignore ban-types
-    assert_function(fn: Function) {
+    assert_function(fn: Function): this {
         this.test_count++;
         
         try {
@@ -66,14 +66,14 @@ export class FrontworkTestworker extends Frontwork {
         return this;
     }
 
-    create_context(url: string, locale: I18nLocale) {
+    create_context(url: string, locale: I18nLocale): FrontworkContext {
         const request = new FrontworkRequest("GET", url, new Headers(), new PostScope({}));
-        const context = new FrontworkContext(this.platform, this.stage, "127.0.0.1", this.api_protocol_address, this.api_protocol_address_ssr, ()=>{}, this.i18n, request, true, null);
+        const context = new FrontworkContext(this.platform, this.stage, "127.0.0.1", this.api_protocol_address, this.api_protocol_address_ssr, ()=>{}, this.i18n, this.module_splitting, request, true, null);
         context.selected_locale = locale;
         return context;
     }
 
-    async test_routes(domains: string[]) {
+    async test_routes(domains: string[]): Promise<this> {
         for (let l = 0; l < this.i18n.length; l++) {
             const locale = this.i18n[l];
             console.log("\nStart testing with locale '"+locale.locale+"'");
@@ -105,7 +105,7 @@ export class FrontworkTestworker extends Frontwork {
         return this;
     }
 
-    print_summary() {
+    print_summary(): this {
         let status_text;
         if (this.fail_count === 0) {
             status_text = green("ok");

@@ -8,7 +8,33 @@ export enum LogType {
     Error,
 }
 
-export const FW =  {
+export type ReporterFunction = (log_type: LogType, category: string, text: string, context: FrontworkContext|null, error: Error|string|null) => void;
+
+export const FW: {
+    /**
+     * Is false if dom.ts / frontwork-service.ts / frontwork-testworker.ts has been imported
+     */
+    is_client_side: boolean,
+
+    /**
+     * If true the default reporter will sent some client logs to the dev server
+     */
+    reporter_client_to_server: boolean,
+
+    /**
+     * IF true FW.reporter will not be be called on LogType.Info.
+     * Warn and Error messages will always be reported.
+     */
+    verbose_logging: boolean,
+
+    /**
+     * To enable a bug reporter for staging and production you can modify FW.reporter, that it sents a request to the backend
+     * @param log_type: LogType
+     * @param category: string
+     * @param text: string
+    */
+    reporter: ReporterFunction,
+} =  {
     /**
      * Is false if dom.ts / frontwork-service.ts / frontwork-testworker.ts has been imported
      */
@@ -31,8 +57,7 @@ export const FW =  {
      * @param category: string 
      * @param text: string
     */
-    // deno-lint-ignore no-unused-vars
-    reporter: function(log_type: LogType, category: string, text: string, context: FrontworkContext|null, error: Error|string|null) {
+    reporter: function(log_type: LogType, category: string, text: string, context: FrontworkContext|null, error: Error|string|null): void {
         if (FW.reporter_client_to_server && FW.is_client_side) {
             fetch(location.protocol+"//"+location.host+"//dr", {
                 method: "POST",
@@ -179,7 +204,7 @@ export class PostScope extends Scope {
     constructor(items: ScopeItems) { super(items); }
 	
     /** Retrieve the POST data from a Request object and set it to PostScope.items */
-    async from_request(_request: Request) {
+    async from_request(_request: Request): Promise<PostScope> {
         let content_type = _request.headers.get("content-type");
         if (content_type !== null) {
             content_type = content_type.split(";")[0];
@@ -310,7 +335,7 @@ export class FrontworkRequest {
         return this.host.split(":")[0];
     }
 
-    __request_text(category: string) {
+    __request_text(category: string): string {
         let text = this.method + " " + this.path;
         if(this.query_string !== "") text += "?" + this.query_string;
         text += " [" + category + "]";
@@ -348,17 +373,17 @@ export class FrontworkResponse {
         this.content = content;
     }
 
-    set_mime_type(mime_type: string) {
+    set_mime_type(mime_type: string): FrontworkResponse {
         this.mime_type = mime_type;
         return this;
     }
 
-    add_header(name: string, value: string) {
+    add_header(name: string, value: string): FrontworkResponse {
         this.headers.push([name, value]);
         return this;
     }
 
-    get_header(name: string) {
+    get_header(name: string): string|null {
         for (const header of this.headers) {
             if (header[0] === name) {
                 return header[1];
@@ -367,7 +392,7 @@ export class FrontworkResponse {
         return null;
     }
 
-    set_cookie(cookie: Cookie) {
+    set_cookie(cookie: Cookie): FrontworkResponse {
         for (let i = 0; i < this.cookies.length; i++) {
             if (this.cookies[i].name === cookie.name) {
                 this.cookies[i] = cookie;
@@ -422,7 +447,7 @@ export class DocumentBuilder implements DocumentBuilderInterface {
     // Head methods
     //
 
-    head_append_tag(tag: string, attributes?: { [key: string]: string }) {
+    head_append_tag(tag: string, attributes?: { [key: string]: string }): DocumentBuilder {
         if (this.context.do_building) {
             const element = document.createElement(tag);
             if (attributes) {
@@ -497,7 +522,7 @@ export class DocumentBuilder implements DocumentBuilderInterface {
         return this;
     }
 
-    body_append(wr: ElemKit<HTMLElement>) {
+    body_append(wr: ElemKit<HTMLElement>): ElemKit<HTMLElement> {
         this.context.body.elem.append(wr.elem);
         return wr;
     }
@@ -506,7 +531,7 @@ export class DocumentBuilder implements DocumentBuilderInterface {
     // Build methods
     //
 
-    html() {
+    html(): ElemKit<HTMLHtmlElement> {
         if (this.context.do_building) {
             // force adding style.css to the end of the head
             const style_css = this.context.head.elem.appendChild( document.createElement("link") );
@@ -529,7 +554,7 @@ export class DocumentBuilder implements DocumentBuilderInterface {
         return this.context.html;
     }
 
-    toString() {
+    toString(): string {
         const html_response = this.html();
 
         return this.doctype + '\n' 
@@ -706,7 +731,7 @@ export class FrontworkContext {
         this.selected_locale = i18n[0];
     }
 
-    set_locale(locale: string) {
+    set_locale(locale: string): boolean {
         if(FW.verbose_logging) FW.reporter(LogType.Info, "I18n", "    Setting locale to \"" + locale + "\"", null, null);
         const locale_found = this.i18n.find(l => l.locale === locale);
 

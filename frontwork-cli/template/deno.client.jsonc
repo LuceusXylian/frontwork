@@ -25,8 +25,7 @@
     "deno.enable": true,
     "nodeModulesDir": "auto",
     "deno.import_intellisense_origins": {
-      "https://deno.land": true,
-      "https://deno.land/x": true
+      "https://jsr.io": true
     },
     "deno.lint": true,
     "deno.unstable": false

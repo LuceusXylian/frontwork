@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Requires:
+    # deno login (JSR: https://jsr.io)
     # cargo login
     # gh auth login
 
@@ -24,10 +25,10 @@ is_invalid_version() {
     fi
 }
 
-# Get current version from package.json
-CURRENT_VERSION=$(grep '"version":' ../frontwork-std/package.json | sed 's/.*: "\(.*\)",/\1/')
+# Get current version from deno.jsonc (JSR package manifest)
+CURRENT_VERSION=$(grep '"version":' ../frontwork-std/deno.jsonc | head -n 1 | sed 's/.*: "\(.*\)",\?/\1/')
 if is_invalid_version "$CURRENT_VERSION"; then
-    echo "✗ CURRENT_VERSION '$CURRENT_VERSION' is NOT a valid semitic version. Please check \"../frontwork-std/package.json\""
+    echo "✗ CURRENT_VERSION '$CURRENT_VERSION' is NOT a valid semitic version. Please check \"../frontwork-std/deno.jsonc\""
     exit 1
 else
     echo "✓ CURRENT_VERSION is '$CURRENT_VERSION'"
@@ -44,8 +45,8 @@ done
 
 echo "✓ NEW_VERSION is '$NEW_VERSION'"
 
-# Update package.json
-sed -i "s/\"version\": \"$CURRENT_VERSION\"/\"version\": \"$NEW_VERSION\"/" ../frontwork-std/package.json
+# Update deno.jsonc (JSR package manifest)
+sed -i "s/\"version\": \"$CURRENT_VERSION\"/\"version\": \"$NEW_VERSION\"/" ../frontwork-std/deno.jsonc
 
 # Update Cargo.toml
 sed -i "s/version = \"$CURRENT_VERSION\"/version = \"$NEW_VERSION\"/" ../frontwork-cli/Cargo.toml
@@ -59,28 +60,16 @@ FILES=(
 )
 
 for file in "${FILES[@]}"; do
-    sed -i "s/frontwork@$CURRENT_VERSION/frontwork@$NEW_VERSION/g" "$file"
+    sed -i "s|jsr:@frontwork-org/frontwork@$CURRENT_VERSION|jsr:@frontwork-org/frontwork@$NEW_VERSION|g" "$file"
 done
 
 
-# Clean deno.lock
+# Clean deno.lock: remove old JSR package entries of the framework.
+# With JSR the lockfile is package-level ("jsr:@frontwork-org/frontwork@x.y.z"),
+# so no per-file entries have to be removed anymore.
 DENO_LOCK_FILE="../frontwork-cli/template/deno.lock"
 
-# Array of files to check
-FILES=(
-    "dom.ts"
-    "frontwork-client.ts"
-    "frontwork-service.ts"
-    "frontwork-testworker.ts"
-    "frontwork.ts"
-    "lib.ts"
-    "utils.ts"
-)
-
-# First remove old version entries
-for file in "${FILES[@]}"; do
-    sed -i "/frontwork@${CURRENT_VERSION}\/${file}/d" "$DENO_LOCK_FILE"
-done
+sed -i "/@frontwork-org\/frontwork@$CURRENT_VERSION/d" "$DENO_LOCK_FILE"
 
 # Remove trailing comma
 sed -i ':a;N;$!ba;s/,\n  }\n}/\n  }\n}/g' "$DENO_LOCK_FILE"
@@ -107,6 +96,19 @@ fi
 # Create and push tag
 git tag -a "$NEW_VERSION" -m "Release v$NEW_VERSION"
 git push origin "$NEW_VERSION"
+
+# Publish framework to JSR (https://jsr.io/@frontwork-org/frontwork)
+echo ""
+echo ""
+echo "Publishing @frontwork-org/frontwork to JSR."
+echo ""
+cd ../frontwork-std
+if ! deno publish; then
+    echo "Error: Failed to publish to JSR. Please run 'deno login' first."
+    cd ../scripts
+    exit 1
+fi
+cd ../scripts
 
 # Remove bloat from template
 rm -rf ../frontwork-cli/template/node_modules/

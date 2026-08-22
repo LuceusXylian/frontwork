@@ -240,7 +240,7 @@ export class FrontworkClient extends Frontwork {
     }
     
     // function replacement for window.location; accessible for the Component method dom_ready */
-    public async page_change_to(url_or_path: string, ignore_not_ready?: boolean) {
+    public async page_change_to(url_or_path: string, ignore_not_ready?: boolean): Promise<boolean> {
         if(FW.verbose_logging) FW.reporter(LogType.Info, "PageChange", "    page_change_to: " + url_or_path, null, null);
         let url;
         const test = url_or_path.indexOf("//");
@@ -333,7 +333,7 @@ export class FrontworkClient extends Frontwork {
         return false;
     }
 
-    public refresh() {
+    public refresh(): Promise<boolean> {
         return this.page_change_to(window.location.toString(), true);
     }
 }
