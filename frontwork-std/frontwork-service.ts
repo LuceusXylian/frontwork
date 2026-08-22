@@ -85,7 +85,7 @@ export class Asset {
         return `W/"${fileInfo.size}-${fileInfo.mtime?.getTime() || ''}"`;
     }
 
-    create_file_response(request: FrontworkRequest, cache_max_age: number) {
+    create_file_response(request: FrontworkRequest, cache_max_age: number): Response {
         if (FW.verbose_logging) request.log("ASSET", null);
         
         // Caching implementation:
@@ -209,7 +209,7 @@ export class FrontworkWebservice extends Frontwork {
         }
     };
 
-    setup_assets_resolver(assets_folder_path: string) {
+    setup_assets_resolver(assets_folder_path: string): FrontworkWebservice {
         // add last slash if not exists
         if (assets_folder_path.slice(-1) !== "/") assets_folder_path += "/";
         this.assets_folder_path = assets_folder_path;
@@ -217,22 +217,22 @@ export class FrontworkWebservice extends Frontwork {
         return this;
     }
 
-    set_cache_max_age(cache_max_age: number) {
+    set_cache_max_age(cache_max_age: number): FrontworkWebservice {
         this.cache_max_age = cache_max_age;
         return this;
     }
     
-    set_api_path_prefixes(api_path_prefixes: string[]) {
+    set_api_path_prefixes(api_path_prefixes: string[]): FrontworkWebservice {
         this.api_path_prefixes = api_path_prefixes;
         return this;
     }
 
-    add_subservice(subservice: FrontworkSubservice) {
+    add_subservice(subservice: FrontworkSubservice): FrontworkWebservice {
         this.subservices.push(subservice);
         return this;
     }
 
-    add_subservices(subservices: FrontworkSubservice[]) {
+    add_subservices(subservices: FrontworkSubservice[]): FrontworkWebservice {
         for (const subservice of subservices) {
             this.subservices.push(subservice);
         }

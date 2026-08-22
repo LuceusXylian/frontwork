@@ -736,8 +736,9 @@ fn update_frontwork_deps() -> std::io::Result<()> {
     let project_path = get_project_path();
     let cargo_pkg_version = env!("CARGO_PKG_VERSION");
 
-    let pattern = Regex::new(r"https://deno\.land/x/frontwork@[0-9]+\.[0-9]+\.[0-9]+/").unwrap();
-    let replacement = format!("https://deno.land/x/frontwork@{}/", cargo_pkg_version);
+	let pattern1 = Regex::new(r"https://deno\.land/x/frontwork@[0-9]+\.[0-9]+\.[0-9]+/").unwrap();
+    let pattern2 = Regex::new(r"jsr:@frontwork-org/frontwork@[0-9]+\.[0-9]+\.[0-9]+").unwrap();
+    let replacement = format!("jsr:@frontwork-org/frontwork@{}", cargo_pkg_version);
 
     // You can specify the files you want to search through
     let files = vec![
@@ -750,7 +751,8 @@ fn update_frontwork_deps() -> std::io::Result<()> {
     for file_path in files {
         if Path::new(&file_path).exists() {
             let content = fs::read_to_string(&file_path)?;
-            let new_content = pattern.replace_all(&content, &replacement);
+			let new_content = pattern1.replace_all(&content, &replacement);
+			let new_content = pattern2.replace_all(&new_content, &replacement);
 
             if content != new_content {
                 fs::write(&file_path, new_content.as_bytes())?;
