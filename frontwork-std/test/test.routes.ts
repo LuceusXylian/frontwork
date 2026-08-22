@@ -10,11 +10,11 @@ class MyMainDocumentBuilder extends DocumentBuilder {
 	constructor(context: FrontworkContext) {
 		super(context);
 		const header = this.body_append( context.create_element("header") );
-		context.ensure_text_element("a", "a-home", { href: "/" }).append_to(header);
-		context.ensure_text_element("a", "a-test2",{ href: "/test2" }).append_to(header);
-		context.ensure_text_element("a", "a-test3",{ href: "/test3" }).append_to(header);
-		context.ensure_text_element("a", "a-german", { href: "/german" }).append_to(header);
-		context.ensure_text_element("a", "a-crash", { href: "/crash" }).append_to(header);
+		context.ensure_text_element("a", "a-home", "a-home", { href: "/" }).append_to(header);
+		context.ensure_text_element("a", "a-test2", "a-test2",{ href: "/test2" }).append_to(header);
+		context.ensure_text_element("a", "a-test3", "a-test3",{ href: "/test3" }).append_to(header);
+		context.ensure_text_element("a", "a-german", "a-german", { href: "/german" }).append_to(header);
+		context.ensure_text_element("a", "a-crash", "a-crash", { href: "/crash" }).append_to(header);
 		this.main = this.body_append(context.create_element("main"));
 	}
 }
@@ -24,8 +24,8 @@ class AnotherComponent implements Component {
     async build(context: FrontworkContext): Promise<FrontworkResponse> {
 		const document_builder = new DocumentBuilder(context);
 		const main = document_builder.body_append( context.create_element("main") );
-		context.ensure_text_element("h1", "another_title1").append_to(main);
-		context.ensure_text_element("p", "another_text1").append_to(main);
+		context.ensure_text_element("h1", "another_title1", "another_title1").append_to(main);
+		context.ensure_text_element("p", "another_text1", "another_text1").append_to(main);
 		return new FrontworkResponse(200, document_builder);
 	}
     async dom_ready() {}
@@ -36,7 +36,7 @@ class TestComponent implements Component {
 	button_event: ElemKit<HTMLButtonElement>;
 	
 	constructor(context: FrontworkContext) {
-		this.button_event = context.ensure_text_element("button", "event_button_tester", { type: "button" });
+		this.button_event = context.ensure_text_element("button", "event_button_tester", "event_button_tester", { type: "button" });
 	}
 
     async build(context: FrontworkContext) {
@@ -46,18 +46,19 @@ class TestComponent implements Component {
 
 		const document_builder = new MyMainDocumentBuilder(context);
 
-		const title = context.ensure_text_element("h1", "title1").append_to(document_builder.main)
-		const description = context.ensure_text_element("p", "text1").append_to(document_builder.main)
+		const title = context.ensure_text_element("h1", "title1", "title1").append_to(document_builder.main)
+		const description = context.ensure_text_element("p", "text1", "text1").append_to(document_builder.main)
 		
 		this.button_event.append_to(document_builder.main);
 		
 		const section = context.create_element("section").append_to(document_builder.main);
-		context.ensure_text_element("h2", "title2").append_to(section);
+		context.ensure_text_element("h2", "title2", "title2").append_to(section);
 
 		// Test forms
 		const action = context.request.GET.get("action");
 		if (action !== null) {
-			context.ensure_text_element("h3", "formtest_title_"+(FW.is_client_side? "ok" : "fail")).append_to(section);
+			const id = "formtest_title_"+(FW.is_client_side? "ok" : "fail");
+			context.ensure_text_element("h3", id, id).append_to(section);
 			for (let i = 0; i < 3; i++) {
 				const div = context.create_element("div").append_to(section);
 				div.elem.innerHTML = "text"+i+": "+context.request.GET.get("text"+i);
@@ -71,7 +72,7 @@ class TestComponent implements Component {
 			context.ensure_element("input", "input"+i, { type: "text", name: "text"+i, value: "asdsad"+i }).append_to(form);
 		}
 		
-		context.ensure_text_element("button", "submit_button", { type: "submit", name: "action", value: "sent" }).append_to(form);
+		context.ensure_text_element("button", "submit_button", "submit_button", { type: "submit", name: "action", value: "sent" }).append_to(form);
 
 		return new FrontworkResponse(200, 
 			document_builder
@@ -108,7 +109,7 @@ class Test2Component implements Component {
     async build(context: FrontworkContext) {
 		const document_builder = new MyMainDocumentBuilder(context);
 
-		const title1 = context.ensure_text_element("h1", "test-page2").append_to(document_builder.main);
+		const title1 = context.ensure_text_element("h1", "test-page2", "test-page2").append_to(document_builder.main);
 		const description = context.ensure_element("p", "description").append_to(document_builder.main);
 		description.elem.innerHTML = "This is a test page <b>2</b> for the Frontwork framework. I will redirect you with js to the home page in 1 second.";
 		
