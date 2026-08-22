@@ -25,10 +25,10 @@ is_invalid_version() {
     fi
 }
 
-# Get current version from deno.json (JSR package manifest)
-CURRENT_VERSION=$(grep '"version":' ../frontwork-std/deno.json | head -n 1 | sed 's/.*: "\(.*\)",\?/\1/')
+# Get current version from deno.jsonc (JSR package manifest)
+CURRENT_VERSION=$(grep '"version":' ../frontwork-std/deno.jsonc | head -n 1 | sed 's/.*: "\(.*\)",\?/\1/')
 if is_invalid_version "$CURRENT_VERSION"; then
-    echo "✗ CURRENT_VERSION '$CURRENT_VERSION' is NOT a valid semitic version. Please check \"../frontwork-std/deno.json\""
+    echo "✗ CURRENT_VERSION '$CURRENT_VERSION' is NOT a valid semitic version. Please check \"../frontwork-std/deno.jsonc\""
     exit 1
 else
     echo "✓ CURRENT_VERSION is '$CURRENT_VERSION'"
@@ -45,8 +45,8 @@ done
 
 echo "✓ NEW_VERSION is '$NEW_VERSION'"
 
-# Update deno.json (JSR package manifest)
-sed -i "s/\"version\": \"$CURRENT_VERSION\"/\"version\": \"$NEW_VERSION\"/" ../frontwork-std/deno.json
+# Update deno.jsonc (JSR package manifest)
+sed -i "s/\"version\": \"$CURRENT_VERSION\"/\"version\": \"$NEW_VERSION\"/" ../frontwork-std/deno.jsonc
 
 # Update Cargo.toml
 sed -i "s/version = \"$CURRENT_VERSION\"/version = \"$NEW_VERSION\"/" ../frontwork-cli/Cargo.toml
