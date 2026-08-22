@@ -7,6 +7,8 @@ import { EnvironmentStage, FrontworkInit } from './frontwork.ts';
 export async function frontwork_bundler(init: FrontworkInit, entryPoints: string[], distdir_js: string) {
     const is_dev = init.stage === EnvironmentStage.Development;
 
+    await Deno.mkdir(distdir_js, { recursive: true });
+
     // Delete in outdir all files that end with ".js" or  ".js.map"
     for await (const entry of Deno.readDir(distdir_js)) {
         if (entry.isFile && (entry.name.endsWith(".js") || entry.name.endsWith(".js.map"))) {

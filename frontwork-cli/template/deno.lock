@@ -2,12 +2,15 @@
   "version": "5",
   "specifiers": {
     "jsr:@b-fuze/deno-dom@0.1.52": "0.1.52",
+    "jsr:@frontwork-org/frontwork@*": "0.4.6",
+    "jsr:@frontwork-org/frontwork@~0.4.6": "0.4.6",
     "jsr:@luca/esbuild-deno-loader@0.11.1": "0.11.1",
     "jsr:@luca/esbuild-deno-loader@0.9": "0.9.0",
     "jsr:@std/assert@~0.213.1": "0.213.1",
     "jsr:@std/bytes@^1.0.2": "1.0.5",
     "jsr:@std/encoding@0.213": "0.213.1",
     "jsr:@std/encoding@^1.0.5": "1.0.9",
+    "jsr:@std/fmt@1": "1.0.10",
     "jsr:@std/jsonc@0.213": "0.213.1",
     "jsr:@std/path@0.213": "0.213.1",
     "jsr:@std/path@^1.0.6": "1.0.8",
@@ -17,6 +20,14 @@
   "jsr": {
     "@b-fuze/deno-dom@0.1.52": {
       "integrity": "ddd89594d2bd795cfa2c4dc5f93a94694a8a75b8c17c6b909e8c86157cc90b65"
+    },
+      "integrity": "ed0ad99ed646536dd4987cd7951ed4d63c06391a37ca7a0360f138dfafddb8ca",
+      "dependencies": [
+        "jsr:@b-fuze/deno-dom",
+        "jsr:@luca/esbuild-deno-loader@0.11.1",
+        "jsr:@std/fmt",
+        "npm:esbuild@0.20.2"
+      ]
     },
     "@luca/esbuild-deno-loader@0.9.0": {
       "integrity": "288bbcede5c8a6f97e635f8fa4df779b13440ee0c0506d9e478fb6537789dc93",
@@ -46,6 +57,9 @@
     },
     "@std/encoding@1.0.9": {
       "integrity": "025b8f18eb1749bc30d1353bf48b77d1eb5e35610220fa226f5a046b9240c5d7"
+    },
+    "@std/fmt@1.0.10": {
+      "integrity": "90dfba288802ac6de82fb31d0917eb9e4450b9925b954d5e51fc29ac07419db5"
     },
     "@std/jsonc@0.213.1": {
       "integrity": "5578f21aa583b7eb7317eed077ffcde47b294f1056bdbb9aacec407758637bfe",
@@ -239,5 +253,10 @@
     "https://deno.land/x/denoflate@1.2.1/pkg/denoflate_bg.wasm.js": "d581956245407a2115a3d7e8d85a9641c032940a8e810acbd59ca86afd34d44d",
     "https://deno.land/x/esbuild@v0.20.1/mod.js": "d50e500b53ce67e31116beba3916b0f9275c0e1cc20bc5cadc0fc1b7a3b06fd9",
     "https://deno.land/x/esbuild@v0.25.2/mod.js": "fde73e72559dc2932556506581bc61462cff72d0394382334500d956851cd9f5"
+  },
+  "workspace": {
+    "dependencies": [
+      "jsr:@frontwork-org/frontwork@~0.4.6"
+    ]
   }
 }
