@@ -28,5 +28,11 @@
       "https://jsr.io": true
     },
     "deno.lint": true,
-    "deno.unstable": false
+    "deno.unstable": false,
+	"minimumDependencyAge": {
+		"age": "P1D",
+		"exclude": [
+			"jsr:@frontwork-org/frontwork"
+		]
+	}
 }

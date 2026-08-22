@@ -1,34 +1,18 @@
 #!/bin/bash
 
+# Refreshes the template's deno.lock: rebuilds it from scratch out of the
+# dependency specifiers referenced in the template source files.
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-cd $SCRIPT_DIR
+cd "$SCRIPT_DIR/../frontwork-cli/template"
 
 
-CURRENT_VERSION="0.1.31"
-DENO_LOCK_FILE="../frontwork-cli/template/deno.lock"
-
-# Array of files to check
-FILES=(
-    "dom.ts"
-    "frontwork-client.ts"
-    "frontwork-service.ts"
-    "frontwork-testworker.ts"
-    "frontwork.ts"
-    "lib.ts"
-    "utils.ts"
-)
-
-# First remove old version entries
-for file in "${FILES[@]}"; do
-    sed -i "/frontwork@${CURRENT_VERSION}\/${file}/d" "$DENO_LOCK_FILE"
-done
-
-# Remove trailing comma
-sed -i ':a;N;$!ba;s/,\n  }\n}/\n  }\n}/g' "$DENO_LOCK_FILE"
+# Remove the lockfile so 'deno cache' rebuilds it without stale framework entries.
+rm -f "deno.lock"
 
 # Reload cache
-deno cache --reload --lock=deno.lock src/main.testworker.ts
-deno cache --reload --lock=deno.lock src/main.client.ts
-
+# --minimum-dependency-age 0 allows resolving freshly published framework versions
+# (Deno >=2.9 refuses by default to resolve versions younger than 24 hours).
+deno cache --reload --minimum-dependency-age 0 --lock="$DENO_LOCK_FILE" src/main.testworker.ts
+deno cache --reload --minimum-dependency-age 0 --lock="$DENO_LOCK_FILE" src/main.client.ts
 
 echo "deno.lock has been updated with new versions and integrity hashes"
