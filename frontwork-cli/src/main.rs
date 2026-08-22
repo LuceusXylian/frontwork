@@ -710,10 +710,10 @@ fn build_client(project_path: &String, dist_web_path: &String) -> process::Child
         .arg("--allow-net")
         .arg("--allow-env")
         .arg("--allow-run")
-        .arg(bundle_ts_path)
-        .arg(dist_web_path)
         .arg("-c")
         .arg(format!("{}/deno.jsonc", project_path))
+        .arg(bundle_ts_path)
+        .arg(dist_web_path)
         .spawn()
         .expect("Failed to execute deno. Make sure deno is installed on this machine.")
 }
@@ -737,8 +737,8 @@ fn update_frontwork_deps() -> std::io::Result<()> {
     let cargo_pkg_version = env!("CARGO_PKG_VERSION");
 
 	let pattern1 = Regex::new(r"https://deno\.land/x/frontwork@[0-9]+\.[0-9]+\.[0-9]+/").unwrap();
-    let pattern2 = Regex::new(r"jsr:@frontwork-org/frontwork@[0-9]+\.[0-9]+\.[0-9]+").unwrap();
-    let replacement = format!("jsr:@frontwork-org/frontwork@{}", cargo_pkg_version);
+    let pattern2 = Regex::new(r"jsr:@frontwork-org/frontwork@\^?[0-9]+\.[0-9]+\.[0-9]+").unwrap();
+    let replacement = format!("jsr:@frontwork-org/frontwork@^{}", cargo_pkg_version);
 
     // You can specify the files you want to search through
     let files = vec![
