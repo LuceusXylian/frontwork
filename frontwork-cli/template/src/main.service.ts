@@ -1,4 +1,4 @@
-import { FrontworkWebservice } from "jsr:@frontwork-org/frontwork@^0.4.8/service";
+import { FrontworkWebservice } from "jsr:@frontwork-org/frontwork@^0.4.9/service";
 import { APP_CONFIG } from "./environments/environment.ts";
 import { EnvironmentStage } from './dependencies.ts';
 
