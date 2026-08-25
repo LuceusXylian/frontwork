@@ -644,7 +644,7 @@ export interface ApiErrorResponse {
 }
 
 export interface ApiErrorEvent {
-    ( context: FrontworkContext, client: FrontworkClient|null, method: "GET"|"POST", path: string, params: { [key: string]: string|number|boolean | string[]|number[]|boolean[] }, error: ApiErrorResponse ): void
+    ( context: FrontworkContext, client: FrontworkClient|null, method: "GET"|"POST", path: string, params: { [key: string]: string|number|boolean | string[]|number[]|boolean[]|object }, error: ApiErrorResponse ): void
 }
 
 export enum PageloadType { Serverside, ClientAfterServerside, ClientDefault }
@@ -858,7 +858,7 @@ export class FrontworkContext {
     }
 
 
-    async api_request<T>(method: "GET"|"POST", path: string, params: { [key: string]: string|number|boolean | string[]|number[]|boolean[] }, extras: ApiRequestExtras = {}): Promise<Result<T, ApiErrorResponse>> {
+    async api_request<T>(method: "GET"|"POST", path: string, params: { [key: string]: string|number|boolean | string[]|number[]|boolean[]|object }, extras: ApiRequestExtras = {}): Promise<Result<T, ApiErrorResponse>> {
         let url = (FW.is_client_side? this.api_protocol_address : this.api_protocol_address_ssr) + path;
         
         // Prepare request options
@@ -870,9 +870,13 @@ export class FrontworkContext {
         let params_string = "";
         const params_array = Object.entries(params);
         if(params_array.length > 0) {
-            params_string += params_array[0][0]+"="+ params_array[0][1];
+            const serialize_value = (v: string|number|boolean|string[]|number[]|boolean[]|object): string => {
+                if (typeof v === "object") return encodeURIComponent(JSON.stringify(v));
+                return encodeURIComponent(String(v));
+            };
+            params_string += params_array[0][0]+"="+ serialize_value(params_array[0][1]);
             for (let a = 1; a < params_array.length; a++) {
-                params_string += "&"+params_array[a][0]+"="+ params_array[a][1];
+                params_string += "&"+params_array[a][0]+"="+ serialize_value(params_array[a][1]);
             }
         }
 
@@ -960,7 +964,7 @@ export class FrontworkContext {
     }
 
     /* Set the retriever of an Observer to be a specified api_request */
-    api_request_observer<T>(observer: Observer<T>, method: "GET"|"POST", path: string, params: { [key: string]: string|number|boolean | string[]|number[]|boolean[] }, extras: ApiRequestExtras = {}): void {
+    api_request_observer<T>(observer: Observer<T>, method: "GET"|"POST", path: string, params: { [key: string]: string|number|boolean | string[]|number[]|boolean[]|object }, extras: ApiRequestExtras = {}): void {
         const retriever: ObserverRetrieverFunction<T> = async () => {
             const result = await this.api_request<T>(method, path, params, extras);
             if (result.ok) {
