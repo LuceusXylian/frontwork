@@ -295,7 +295,7 @@ export const APP_CONFIG: FrontworkInit = {
 	i18n: i18n,
 	build_on_page_load: false,
 	module_splitting: true,
-	api_error_event: (context: FrontworkContext, client: FrontworkClient|null, method: "GET"|"POST", path: string, params: { [key: string]: string|number|boolean | string[]|number[]|boolean[] }, error: ApiErrorResponse) => {
+	api_error_event: (context: FrontworkContext, client: FrontworkClient|null, method: "GET"|"POST", path: string, params: { [key: string]: string|number|boolean | string[]|number[]|boolean[]|object }, error: ApiErrorResponse) => {
 		if (context.request.path !== "/" && client !== null && error.status === 401) {
 			client.page_change_to("/", true);
 		}
