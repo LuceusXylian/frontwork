@@ -858,10 +858,9 @@ export class FrontworkContext {
     }
 
 
-    async api_request<T>(method: "GET"|"POST", path: string, params: { [key: string]: string|number|boolean | string[]|number[]|boolean[]|object }, extras: ApiRequestExtras = {}): Promise<Result<T, ApiErrorResponse>> {
+    async api_request<T>(method: "GET"|"POST", path: string, params: { [key: string]: string|number|boolean | string[]|number[]|boolean[] }, extras: ApiRequestExtras = {}): Promise<Result<T, ApiErrorResponse>> {
         let url = (FW.is_client_side? this.api_protocol_address : this.api_protocol_address_ssr) + path;
         
-        // Prepare request options
         const options: RequestInit = extras; 
         options.method = method;
         options.headers = extras.headers? extras.headers : new Headers();
@@ -870,13 +869,9 @@ export class FrontworkContext {
         let params_string = "";
         const params_array = Object.entries(params);
         if(params_array.length > 0) {
-            const serialize_value = (v: string|number|boolean|string[]|number[]|boolean[]|object): string => {
-                if (typeof v === "object") return encodeURIComponent(JSON.stringify(v));
-                return encodeURIComponent(String(v));
-            };
-            params_string += params_array[0][0]+"="+ serialize_value(params_array[0][1]);
+            params_string += params_array[0][0]+"="+ params_array[0][1];
             for (let a = 1; a < params_array.length; a++) {
-                params_string += "&"+params_array[a][0]+"="+ serialize_value(params_array[a][1]);
+                params_string += "&"+params_array[a][0]+"="+ params_array[a][1];
             }
         }
 
@@ -886,17 +881,32 @@ export class FrontworkContext {
             options.body = params_string;
             options.headers.set("Content-Type", "application/x-www-form-urlencoded");
         }
-        
-        
+
+        return await this.__api_request<T>(url, options, params, "api_request");
+    }
+
+    async api_request_json<T>(method: "POST", path: string, params: object, extras: ApiRequestExtras = {}): Promise<Result<T, ApiErrorResponse>> {
+        const url = (FW.is_client_side? this.api_protocol_address : this.api_protocol_address_ssr) + path;
+        const options: RequestInit = extras;
+        options.method = method;
+        options.headers = extras.headers? extras.headers : new Headers();
+		options.body = JSON.stringify(params);
+		options.headers.set("Content-Type", "application/json");
+        return await this.__api_request<T>(url, options, params, "api_request_json");
+    }
+
+    // deno-lint-ignore no-explicit-any
+    private async __api_request<T>(url: string, options: RequestInit, params: any, caller_name: string): Promise<Result<T, ApiErrorResponse>> {
+        if (!(options.headers instanceof Headers)) {
+            options.headers = new Headers(options.headers);
+        }
+
         if (!FW.is_client_side) {
-            // Deno should pass Cookies from the browser to the API
             let cookies_string = "";
             this.request.COOKIES.forEach((key, name) => {
                 cookies_string += key+"="+name+"; ";
             });
             options.headers.set("Cookie", cookies_string);
-
-            // Deno should pass the browser IP to the API
             options.headers.set("X-Forwarded-For", this.client_ip);
         }
 
@@ -904,7 +914,6 @@ export class FrontworkContext {
             const response = await fetch(url, options);
             const response_text = await response.text();
             
-            // retrieve set-cookie headers from the API and pass them to the browser
             if (!FW.is_client_side) {
                 const set_cookies = response.headers.getSetCookie();
                 set_cookies.forEach(item => this.set_cookies.push(item));
@@ -915,10 +924,10 @@ export class FrontworkContext {
                     const api_error_response: ApiErrorResponse = JSON.parse(response_text);
                     api_error_response.status = response.status;
 
-                    FW.reporter(LogType.Error, "api_request", "ERROR executing api_request( "+method+" "+path+" )", this, null);
+                    FW.reporter(LogType.Error, caller_name, "ERROR executing "+caller_name+"( "+options.method+" "+url+" )", this, null);
                     console.error(response);
                     
-                    this.api_error_event(this, this.client, method, path, params, api_error_response);
+                    this.api_error_event(this, this.client, options.method as "GET"|"POST", url, params, api_error_response);
                     
                     return {
                         ok: false,
@@ -940,10 +949,10 @@ export class FrontworkContext {
                     error_message += response_text;
                 }
                 error_message += "`";
-                FW.reporter(LogType.Error, "api_request", "ERROR executing api_request( "+method+" "+path+" ) Invalid JSON.", this, error_message+"\n\n"+error);
+                FW.reporter(LogType.Error, caller_name, "ERROR executing "+caller_name+"( "+options.method+" "+url+" ) Invalid JSON.", this, error_message+"\n\n"+error);
                 console.error(response, error);
                 const api_error_response: ApiErrorResponse = { status: 501, error_message: "API did not returned parsable JSON" }
-                this.api_error_event(this, this.client, method, path, params, api_error_response);
+                this.api_error_event(this, this.client, options.method as "GET"|"POST", url, params, api_error_response);
 
                 return {
                     ok: false,
@@ -952,9 +961,9 @@ export class FrontworkContext {
             }
         // deno-lint-ignore no-explicit-any
         } catch (error: any) {
-            FW.reporter(LogType.Error, "api_request", "ERROR executing api_request( "+method+" "+path+" )", this, error);
+            FW.reporter(LogType.Error, caller_name, "ERROR executing "+caller_name+"( "+options.method+" "+url+" )", this, error);
             const api_error_response: ApiErrorResponse = { status: 503, error_message: error }
-            this.api_error_event(this, this.client, method, path, params, api_error_response);
+            this.api_error_event(this, this.client, options.method as "GET"|"POST", url, params, api_error_response);
 
             return {
                 ok: false,
@@ -964,7 +973,7 @@ export class FrontworkContext {
     }
 
     /* Set the retriever of an Observer to be a specified api_request */
-    api_request_observer<T>(observer: Observer<T>, method: "GET"|"POST", path: string, params: { [key: string]: string|number|boolean | string[]|number[]|boolean[]|object }, extras: ApiRequestExtras = {}): void {
+    api_request_observer<T>(observer: Observer<T>, method: "GET"|"POST", path: string, params: { [key: string]: string|number|boolean | string[]|number[]|boolean[] }, extras: ApiRequestExtras = {}): void {
         const retriever: ObserverRetrieverFunction<T> = async () => {
             const result = await this.api_request<T>(method, path, params, extras);
             if (result.ok) {
