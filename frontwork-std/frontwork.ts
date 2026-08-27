@@ -907,7 +907,20 @@ export class FrontworkContext {
                 cookies_string += key+"="+name+"; ";
             });
             options.headers.set("Cookie", cookies_string);
+			
+            // Forward browser headers to the API.
+            // Authorization Header is not forwarded, because nginx should forward it to the API microservice
             options.headers.set("X-Forwarded-For", this.client_ip);
+            const forwarded_headers = ["User-Agent", "Accept-Language"];
+            for (const header_name of forwarded_headers) {
+                const value = this.request.headers.get(header_name);
+                if (value !== null) {
+                    options.headers.set(header_name, value);
+                }
+            }
+
+            const proto = this.request.protocol === "https" ? "https" : "http";
+            options.headers.set("X-Forwarded-Proto", proto);
         }
 
         try {
